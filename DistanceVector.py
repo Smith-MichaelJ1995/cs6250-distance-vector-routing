@@ -74,8 +74,9 @@ class DistanceVector(Node):
             origin_node_weight = self.get_outgoing_neighbor_weight(origin_node)
 
             # adding sum of distance vector 
-            self.distanceVector[origin_node] = cost_to_origin + origin_node_weight
+            self.distanceVector[origin_node] = cost_to_origin + int(origin_node_weight)
 
+        
         # Empty queue
         self.messages = []
 
@@ -89,6 +90,10 @@ class DistanceVector(Node):
                 dest = incoming_link.name
             )
 
+        # # show node messages
+        # print("processing node named: {}".format(node.name))
+        # print("") 
+
     def log_distances(self):
         """ This function is called immedately after process_BF each round.  It 
         prints distances to the console and the log file in the following format (no whitespace either end):
@@ -101,5 +106,20 @@ class DistanceVector(Node):
         NOTE: A0 shows that the distance to self is 0 """
         
         # TODO: Use the provided helper function add_entry() to accomplish this task (see helpers.py).
-        # An example call that which prints the format example text above (hardcoded) is provided.        
-        # add_entry("A", "A0,B1,C2")        
+        # An example call that which prints the format example text above (hardcoded) is provided.
+
+        # Create String To Reflect Distance Vector Entry: will always start with them reaching themselves at cost 0
+        # distanceVectorString = "{}0".format(self.name)
+        distanceVectorString = ""
+
+        # traverse through distance vector to build out distance vector string
+        for name, weight in self.distanceVector.items():
+            
+            # append current vector to distanceVectorString
+            distanceVectorString += "{}{},".format(name, weight)
+
+        # remove final comma from distance vector string
+        distanceVectorString = distanceVectorString[:-1]
+            
+        # publish entry now that distanceVectorString is finalized
+        add_entry(self.name, distanceVectorString)        

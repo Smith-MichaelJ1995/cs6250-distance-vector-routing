@@ -96,6 +96,8 @@ class Topology(object):
             for node in self.nodes:
                 node.process_BF()
                 node.log_distances()
+
+            
             
 
             # exit()
@@ -104,6 +106,8 @@ class Topology(object):
             # out alphabetical order, which you can turn off so the logfile 
             # matches what is printed during log_distances().
             finish_round()
+
+            exit()
 
             done = True
             for node in self.nodes:
