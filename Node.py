@@ -74,6 +74,12 @@ class Node(object):
         if dest not in self.neighbor_names:
            raise Exception("Neighbor " + dest + " does not have an incoming link to " + self.name)
 
+        # print("Sending The Following Message:")
+        # print("Origin: {}".format(msg['origin_node']))
+        # print("Origin Distance Vector: {}".format(msg['origin_node_distance_vector']))
+        # print("Destination Node Name: {}".format(dest))
+        # print("")
+
         self.topology.topodict[dest].queue_msg(msg)
 
     def queue_msg(self, msg):

@@ -29,23 +29,9 @@ class DistanceVector(Node):
         super(DistanceVector, self).__init__(name, topolink, outgoing_links, incoming_links)
         
         # TODO: Create any necessary data structure(s) to contain the Node's internal state / distance vector data
-        self.distanceVector = self.build_distance_vector(outgoing_links) 
-
-    # A node's distance vector is the nodes it can reach via its outgoing links
-    def build_distance_vector(self, outgoing_links):
-        # distance vector will always contain ref to itself with weight of 0
-        distanceVector = [
-            Neighbor(
-                neighbor_node=self.name,
-                weight=0
-            )
-        ]
-
-        # traverse through neighbors, establish distance vector structure
-        distanceVector += self.outgoing_links
-
-        # provide distance vector structure to caller
-        return distanceVector
+        self.distanceVector = {
+            "{}".format(self.name): 0,
+        } 
 
     def send_initial_messages(self):
         """ This is run once at the beginning of the simulation, after all
@@ -58,6 +44,14 @@ class DistanceVector(Node):
 
         # TODO - Each node needs to build a message and send it to each of its neighbors
         # HINT: Take a look at the skeleton methods provided for you in Node.py
+        for incoming_link in self.incoming_links:
+            self.send_msg(
+                msg = {
+                    "origin_node": self.name,
+                    "origin_node_distance_vector": self.distanceVector
+                },
+                dest = incoming_link.name
+            )
 
     def process_BF(self):
         """ This is run continuously (repeatedly) during the simulation. DV
@@ -66,13 +60,34 @@ class DistanceVector(Node):
 
         # Implement the Bellman-Ford algorithm here.  It must accomplish two tasks below:
         # TODO 1. Process queued messages       
-        for msg in self.messages:            
-            pass
-        
+
+        for index, msg in enumerate(self.messages):
+            
+            # extrapolate local variables
+            origin_node = msg['origin_node']
+            origin_node_distance_vector = msg['origin_node_distance_vector']
+
+            # use distance vector to find cost for origin node
+            cost_to_origin = origin_node_distance_vector[origin_node]
+
+            # use builtin function to get weight for origin node
+            origin_node_weight = self.get_outgoing_neighbor_weight(origin_node)
+
+            # adding sum of distance vector 
+            self.distanceVector[origin_node] = cost_to_origin + origin_node_weight
+
         # Empty queue
         self.messages = []
 
-        # TODO 2. Send neighbors updated distances               
+        # TODO 2. Send neighbors updated distances     
+        for incoming_link in self.incoming_links:
+            self.send_msg(
+                msg = {
+                    "origin_node": self.name,
+                    "origin_node_distance_vector": self.distanceVector
+                },
+                dest = incoming_link.name
+            )
 
     def log_distances(self):
         """ This function is called immedately after process_BF each round.  It 
@@ -87,4 +102,4 @@ class DistanceVector(Node):
         
         # TODO: Use the provided helper function add_entry() to accomplish this task (see helpers.py).
         # An example call that which prints the format example text above (hardcoded) is provided.        
-        add_entry("A", "A0,B1,C2")        
+        # add_entry("A", "A0,B1,C2")        

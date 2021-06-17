@@ -91,7 +91,6 @@ class Topology(object):
         for node in self.nodes:
             node.send_initial_messages()
 
-
         done = False
         while done == False:
             for node in self.nodes:
@@ -99,6 +98,7 @@ class Topology(object):
                 node.log_distances()
             
 
+            # exit()
             # Done with a round. Now, we call finish_round() which writes out
             # each entry in log_distances(). By default, this will will print 
             # out alphabetical order, which you can turn off so the logfile 
