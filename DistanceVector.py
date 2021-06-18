@@ -59,7 +59,9 @@ class DistanceVector(Node):
         messages that need to be sent to other nodes as a result are sent. """
 
         # Implement the Bellman-Ford algorithm here.  It must accomplish two tasks below:
-        # TODO 1. Process queued messages       
+        # TODO 1. Process queued messages  
+        # data-structure to track change of internal distance vector components 
+        hasChangeOccured = False   
 
         for index, msg in enumerate(self.messages):
             
@@ -67,32 +69,55 @@ class DistanceVector(Node):
             origin_node = msg['origin_node']
             origin_node_distance_vector = msg['origin_node_distance_vector']
 
-            # use distance vector to find cost for origin node
-            cost_to_origin = origin_node_distance_vector[origin_node]
+            # traverse through all nodes in messages distance vector
+            for node, dist in origin_node_distance_vector:
 
-            # use builtin function to get weight for origin node
-            origin_node_weight = self.get_outgoing_neighbor_weight(origin_node)
+                # use distance vector to find cost for origin node
+                # cost_to_origin = origin_node_distance_vector[origin_node]
 
-            # adding sum of distance vector 
-            self.distanceVector[origin_node] = cost_to_origin + int(origin_node_weight)
+                # use builtin function to get weight for origin node
+                weight = self.get_outgoing_neighbor_weight(origin_node)
+
+                # adding sum of distance vector 
+                proposedCost = int(dist) + int(weight)
+
+                # handle case where we need to add a new vector to our DV
+                if node not in self.distanceVector:
+
+                    print("origin_node not in self.distanceVector")
+
+                    # add the new vector at the proposed cost
+                    self.distanceVector[node] = proposedCost
+
+                    # note that a distance vector link was updated
+                    hasChangeOccured = True
+
+                elif self.name != node and proposedCost < dist:
+                    print("origin_node != self.name and proposedCost < cost_to_origin")
+
+                    # add the new vector at the proposed cost
+                    self.distanceVector[origin_node] = proposedCost
+
+                    # note that a distance vector link was updated
+                    hasChangeOccured = True
+                else:
+                    print("##### Doing Nothing #####")
+                    pass
 
         
         # Empty queue
         self.messages = []
 
-        # TODO 2. Send neighbors updated distances     
-        for incoming_link in self.incoming_links:
-            self.send_msg(
-                msg = {
-                    "origin_node": self.name,
-                    "origin_node_distance_vector": self.distanceVector
-                },
-                dest = incoming_link.name
-            )
-
-        # # show node messages
-        # print("processing node named: {}".format(node.name))
-        # print("") 
+        # TODO 2. Send neighbors updated distances  
+        if hasChangeOccured:   
+            for incoming_link in self.incoming_links:
+                self.send_msg(
+                    msg = {
+                        "origin_node": self.name,
+                        "origin_node_distance_vector": self.distanceVector
+                    },
+                    dest = incoming_link.name
+                )
 
     def log_distances(self):
         """ This function is called immedately after process_BF each round.  It 

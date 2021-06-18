@@ -106,8 +106,7 @@ class Topology(object):
             # out alphabetical order, which you can turn off so the logfile 
             # matches what is printed during log_distances().
             finish_round()
-
-            exit()
+            print("=============FINISHING ROUND============")
 
             done = True
             for node in self.nodes:
