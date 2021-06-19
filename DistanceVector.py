@@ -33,6 +33,9 @@ class DistanceVector(Node):
             "{}".format(self.name): 0,
         } 
 
+        # Create Placeholders to prevent against negative cycles
+        self.negativeCycles = []
+
     def send_initial_messages(self):
         """ This is run once at the beginning of the simulation, after all
         DistanceVector objects are created and their links to each other are
@@ -70,7 +73,7 @@ class DistanceVector(Node):
             origin_node_distance_vector = msg['origin_node_distance_vector']
 
             # traverse through all nodes in messages distance vector
-            for node, dist in origin_node_distance_vector:
+            for vector, cost in origin_node_distance_vector.items():
 
                 # use distance vector to find cost for origin node
                 # cost_to_origin = origin_node_distance_vector[origin_node]
@@ -79,29 +82,36 @@ class DistanceVector(Node):
                 weight = self.get_outgoing_neighbor_weight(origin_node)
 
                 # adding sum of distance vector 
-                proposedCost = int(dist) + int(weight)
+                proposedCost = int(cost) + int(weight)
 
                 # handle case where we need to add a new vector to our DV
-                if node not in self.distanceVector:
-
-                    print("origin_node not in self.distanceVector")
+                if vector not in self.distanceVector:
 
                     # add the new vector at the proposed cost
-                    self.distanceVector[node] = proposedCost
+                    self.distanceVector[vector] = proposedCost
 
                     # note that a distance vector link was updated
                     hasChangeOccured = True
 
-                elif self.name != node and proposedCost < dist:
-                    print("origin_node != self.name and proposedCost < cost_to_origin")
+                elif self.name != vector and proposedCost < self.distanceVector[vector]:
 
-                    # add the new vector at the proposed cost
-                    self.distanceVector[origin_node] = proposedCost
+                    # make sure to test against negative cycle
+                    if vector in self.negativeCycles:
+                        # add the new vector at the proposed cost
+                        self.distanceVector[vector] = -99
+                    else:
 
-                    # note that a distance vector link was updated
-                    hasChangeOccured = True
+                        # record vector for possible loop
+                        self.negativeCycles.append(vector)
+
+                        # add the new vector at the proposed cost
+                        self.distanceVector[vector] = proposedCost
+
+                        # note that a distance vector link was updated
+                        hasChangeOccured = True
+
                 else:
-                    print("##### Doing Nothing #####")
+                    # print("##### Doing Nothing #####")
                     pass
 
         
