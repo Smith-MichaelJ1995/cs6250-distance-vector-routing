@@ -1,0 +1,5 @@
+# This shouldn't produce -99
+# Shown in the project description file in page-4.
+A,B,20
+B,C,-20
+C,A,-20

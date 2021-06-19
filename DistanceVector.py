@@ -150,7 +150,7 @@ class DistanceVector(Node):
         distanceVectorString = ""
 
         # traverse through distance vector to build out distance vector string
-        for name, weight in self.distanceVector.items():
+        for name, weight in sorted(self.distanceVector.items()):
             
             # append current vector to distanceVectorString
             distanceVectorString += "{}{},".format(name, weight)
