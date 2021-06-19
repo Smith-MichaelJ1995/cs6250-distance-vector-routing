@@ -31,9 +31,9 @@ class DistanceVector(Node):
         # TODO: Create any necessary data structure(s) to contain the Node's internal state / distance vector data
         self.distanceVector = {
             "{}".format(self.name): 0,
-        } 
+        }
 
-        # Create Placeholders to prevent against negative cycles
+        # detect negative loops
         self.negativeCycles = []
 
     def send_initial_messages(self):
@@ -93,22 +93,24 @@ class DistanceVector(Node):
                     # note that a distance vector link was updated
                     hasChangeOccured = True
 
-                elif self.name != vector and proposedCost < self.distanceVector[vector]:
+                elif (self.name != vector) and (self.distanceVector[vector] != -99) and (proposedCost < self.distanceVector[vector]):
 
-                    # make sure to test against negative cycle
-                    if vector in self.negativeCycles:
-                        # add the new vector at the proposed cost
-                        self.distanceVector[vector] = -99
-                    else:
-
-                        # record vector for possible loop
+                    # stop sending messages if cost == -99
+                    if vector not in self.negativeCycles:
+                        
+                        # remember this vector as a potential negative cycle
                         self.negativeCycles.append(vector)
 
                         # add the new vector at the proposed cost
                         self.distanceVector[vector] = proposedCost
+                    else:
 
-                        # note that a distance vector link was updated
-                        hasChangeOccured = True
+                        # we've encountered a negative cycle
+                        self.distanceVector[vector] = -99
+                        
+                    # note that a distance vector link was updated
+                    hasChangeOccured = True
+
 
                 else:
                     # print("##### Doing Nothing #####")
