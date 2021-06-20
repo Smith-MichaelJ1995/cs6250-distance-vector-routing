@@ -75,39 +75,44 @@ class DistanceVector(Node):
             # traverse through all nodes in messages distance vector
             for vector_name, vector_weight in origin_node_distance_vector.items():
 
-                # use builtin function to get weight for origin node
-                outgoing_neighbor_weight = self.get_outgoing_neighbor_weight(origin_node)
+                # only process a vector if it's not the current node,
+                # a node will always reach itself at length zero
+                if self.name != vector_name:
 
-                # adding sum of distance vector 
-                proposedCost = int(vector_weight) + int(outgoing_neighbor_weight)
+                    # use builtin function to get weight for origin node
+                    costToOrigin = self.get_outgoing_neighbor_weight(origin_node)
 
-                # handle case where we need to add a new vector to our DV
-                if vector_name not in self.distanceVector:
+                    # adding sum of distance vector 
+                    proposedCost = int(vector_weight) + int(costToOrigin)
 
-                    # add the new vector_name at the proposed cost
-                    self.distanceVector[vector_name] = proposedCost
+                    # handle case where we need to add a new vector to our DV
+                    if vector_name not in self.distanceVector:
+                        
+                        # add the new vector at the proposed cost
+                        self.distanceVector[vector_name] = proposedCost
 
-                    # note that a distance vector link was updated
-                    hasChangeOccured = True
+                        # regardless, send message if change occurs
+                        hasChangeOccured = True
 
-                elif vector_weight <= -99:
-                    
-                    # floor cost will be -99, stop negative loops
-                    self.distanceVector[vector_name] = -99
+                    else:
 
-                # determine if we have a faster path to the target
-                elif (self.name != vector_name) and (proposedCost < self.distanceVector[vector_name]):
+                        # in situation of self.distanceVector[vector_name] == -99, 
+                        # we know that no changes need to be made at this vector in the distance vector 
+                        if self.distanceVector[vector_name] != -99:
 
-                    # add the new vector at the proposed cost
-                    self.distanceVector[vector_name] = proposedCost
+                            # handle case if cost drops below -99, this is our base case..
+                            if proposedCost <= -99:
 
-                    # regardless, send message if change occurs
-                    hasChangeOccured = True
+                                # set to negative infinity
+                                self.distanceVector[vector_name] = -99
 
+                                # regardless, send message if change occurs
+                                hasChangeOccured = True
 
-                else:
-                    # print("##### Doing Nothing #####")
-                    continue
+                            elif proposedCost < self.distanceVector[vector_name]:
+
+                                # add the new vector at the proposed cost
+                                self.distanceVector[vector_name] = proposedCost
 
         
         # Empty queue
