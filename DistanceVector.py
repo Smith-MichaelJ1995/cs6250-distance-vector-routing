@@ -34,7 +34,7 @@ class DistanceVector(Node):
         }
 
         # detect negative loops
-        self.negativeCycles = []
+        # self.negativeCycles = []
 
     def send_initial_messages(self):
         """ This is run once at the beginning of the simulation, after all
@@ -73,48 +73,41 @@ class DistanceVector(Node):
             origin_node_distance_vector = msg['origin_node_distance_vector']
 
             # traverse through all nodes in messages distance vector
-            for vector, cost in origin_node_distance_vector.items():
-
-                # use distance vector to find cost for origin node
-                # cost_to_origin = origin_node_distance_vector[origin_node]
+            for vector_name, vector_weight in origin_node_distance_vector.items():
 
                 # use builtin function to get weight for origin node
-                weight = self.get_outgoing_neighbor_weight(origin_node)
+                outgoing_neighbor_weight = self.get_outgoing_neighbor_weight(origin_node)
 
                 # adding sum of distance vector 
-                proposedCost = int(cost) + int(weight)
+                proposedCost = int(vector_weight) + int(outgoing_neighbor_weight)
 
                 # handle case where we need to add a new vector to our DV
-                if vector not in self.distanceVector:
+                if vector_name not in self.distanceVector:
 
-                    # add the new vector at the proposed cost
-                    self.distanceVector[vector] = proposedCost
+                    # add the new vector_name at the proposed cost
+                    self.distanceVector[vector_name] = proposedCost
 
                     # note that a distance vector link was updated
                     hasChangeOccured = True
 
-                elif (self.name != vector) and (self.distanceVector[vector] != -99) and (proposedCost < self.distanceVector[vector]):
+                elif vector_weight <= -99:
+                    
+                    # floor cost will be -99, stop negative loops
+                    self.distanceVector[vector_name] = -99
 
-                    # stop sending messages if cost == -99
-                    if vector not in self.negativeCycles:
-                        
-                        # remember this vector as a potential negative cycle
-                        self.negativeCycles.append(vector)
+                # determine if we have a faster path to the target
+                elif (self.name != vector_name) and (proposedCost < self.distanceVector[vector_name]):
 
-                        # add the new vector at the proposed cost
-                        self.distanceVector[vector] = proposedCost
-                    else:
+                    # add the new vector at the proposed cost
+                    self.distanceVector[vector_name] = proposedCost
 
-                        # we've encountered a negative cycle
-                        self.distanceVector[vector] = -99
-                        
-                    # note that a distance vector link was updated
+                    # regardless, send message if change occurs
                     hasChangeOccured = True
 
 
                 else:
                     # print("##### Doing Nothing #####")
-                    pass
+                    continue
 
         
         # Empty queue
