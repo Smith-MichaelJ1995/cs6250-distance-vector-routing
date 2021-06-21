@@ -34,8 +34,17 @@ class DistanceVector(Node):
         }
 
         # detect negative loops
-        # self.negativeCycles = []
+        self.negativeCycleMonitor = []
 
+    # given vector & proposedCost, check for negative loop
+    def check_negative_cycle(self, vector_name, proposedCost):
+
+        # traverse through datastructure
+        return True if (vector_name in self.negativeCycleMonitor) and (self.negativeCycleMonitor[vector_name]['cost'] == proposedCost) else False
+
+
+
+    # deliver initial messages to neighboring distance vectors
     def send_initial_messages(self):
         """ This is run once at the beginning of the simulation, after all
         DistanceVector objects are created and their links to each other are
@@ -98,21 +107,27 @@ class DistanceVector(Node):
 
                         # in situation of self.distanceVector[vector_name] == -99, 
                         # we know that no changes need to be made at this vector in the distance vector 
-                        if self.distanceVector[vector_name] != -250:
+                        if self.distanceVector[vector_name] != -99:
 
                             # handle case if cost drops below -99, this is our base case..
-                            if proposedCost <= -250:
+                            if proposedCost <= -99:
 
                                 # set to negative infinity
-                                self.distanceVector[vector_name] = -250
+                                self.distanceVector[vector_name] = -99
 
                                 # regardless, send message if change occurs
                                 hasChangeOccured = True
 
-                            elif proposedCost < self.distanceVector[vector_name]:
+                            elif proposedCost < self.distanceVector[vector_name] and self.check_negative_cycle(vector_name, proposedCost):
 
                                 # add the new vector at the proposed cost
                                 self.distanceVector[vector_name] = proposedCost
+
+                                # record change for future negative cycle detection
+                                self.negativeCycleMonitor.append({
+                                    "vector": vector_name,
+                                    "cost": proposedCost
+                                })
 
                                 # regardless, send message if change occurs
                                 hasChangeOccured = True
