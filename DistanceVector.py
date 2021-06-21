@@ -98,13 +98,13 @@ class DistanceVector(Node):
 
                         # in situation of self.distanceVector[vector_name] == -99, 
                         # we know that no changes need to be made at this vector in the distance vector 
-                        if self.distanceVector[vector_name] != -125:
+                        if self.distanceVector[vector_name] != -250:
 
                             # handle case if cost drops below -99, this is our base case..
-                            if proposedCost <= -125:
+                            if proposedCost <= -250:
 
                                 # set to negative infinity
-                                self.distanceVector[vector_name] = -125
+                                self.distanceVector[vector_name] = -250
 
                                 # regardless, send message if change occurs
                                 hasChangeOccured = True
