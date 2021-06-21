@@ -98,13 +98,13 @@ class DistanceVector(Node):
 
                         # in situation of self.distanceVector[vector_name] == -99, 
                         # we know that no changes need to be made at this vector in the distance vector 
-                        if self.distanceVector[vector_name] != -99:
+                        if self.distanceVector[vector_name] != -125:
 
                             # handle case if cost drops below -99, this is our base case..
-                            if proposedCost <= -99:
+                            if proposedCost <= -125:
 
                                 # set to negative infinity
-                                self.distanceVector[vector_name] = -99
+                                self.distanceVector[vector_name] = -125
 
                                 # regardless, send message if change occurs
                                 hasChangeOccured = True
@@ -113,6 +113,10 @@ class DistanceVector(Node):
 
                                 # add the new vector at the proposed cost
                                 self.distanceVector[vector_name] = proposedCost
+
+                                # regardless, send message if change occurs
+                                hasChangeOccured = True
+                                
 
         
         # Empty queue
@@ -149,7 +153,11 @@ class DistanceVector(Node):
 
         # traverse through distance vector to build out distance vector string
         for name, weight in sorted(self.distanceVector.items()):
-            
+
+            # adjust weights to reflect infinity
+            if weight <= -100:
+                weight = -99
+
             # append current vector to distanceVectorString
             distanceVectorString += "{}{},".format(name, weight)
 
